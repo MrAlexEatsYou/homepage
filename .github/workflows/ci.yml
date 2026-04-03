@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-and-dispatch:
-    runs-on: [self-hosted, linux, build]
+    runs-on: [self-hosted, linux, deploy]
     permissions:
       contents: read
       packages: write
