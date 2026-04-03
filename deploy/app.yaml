@@ -1,0 +1,5 @@
+name: homepage
+image: ghcr.io/mralexeatsyou/homepage:main
+healthcheck: https://alexander.j.sealey-everest.nord/
+exposedVia: caddy
+needsSecrets: false

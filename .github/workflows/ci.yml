@@ -1,0 +1,17 @@
+name: App CI
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  app-ci:
+    uses: MrAlexEatsYou/homelab-ops/.github/workflows/reusable-app-ci.yml@main
+    with:
+      app_name: homepage
+      healthcheck: https://alexander.j.sealey-everest.nord/
+      ops_repo: MrAlexEatsYou/homelab-ops
+      ref_name: main
+    secrets:
+      ops_repo_token: ${{ secrets.HOMELAB_OPS_TOKEN }}
