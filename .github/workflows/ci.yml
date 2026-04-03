@@ -6,12 +6,50 @@ on:
   workflow_dispatch:
 
 jobs:
-  app-ci:
-    uses: MrAlexEatsYou/homelab-ops/.github/workflows/reusable-app-ci.yml@main
-    with:
-      app_name: homepage
-      healthcheck: https://alexander.j.sealey-everest.nord/
-      ops_repo: MrAlexEatsYou/homelab-ops
-      ref_name: main
-    secrets:
-      ops_repo_token: ${{ secrets.HOMELAB_OPS_TOKEN }}
+  build-and-dispatch:
+    runs-on: [self-hosted, linux, build]
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image metadata
+        id: meta
+        run: |
+          IMAGE_REPO="ghcr.io/${GITHUB_REPOSITORY,,}"
+          IMAGE_TAG="${GITHUB_SHA}"
+          echo "image_ref=${IMAGE_REPO}:${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
+          echo "image_main=${IMAGE_REPO}:main" >> "$GITHUB_OUTPUT"
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        run: |
+          docker build -t "${{ steps.meta.outputs.image_ref }}" .
+          docker push "${{ steps.meta.outputs.image_ref }}"
+          docker tag "${{ steps.meta.outputs.image_ref }}" "${{ steps.meta.outputs.image_main }}"
+          docker push "${{ steps.meta.outputs.image_main }}"
+
+      - name: Dispatch pin update to homelab-ops
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.HOMELAB_OPS_TOKEN }}
+          script: |
+            await github.rest.repos.createDispatchEvent({
+              owner: "MrAlexEatsYou",
+              repo: "homelab-ops",
+              event_type: "app_release_published",
+              client_payload: {
+                app_name: "homepage",
+                source_repo: process.env.GITHUB_REPOSITORY,
+                source_ref: process.env.GITHUB_REF_NAME,
+                image: "${{ steps.meta.outputs.image_ref }}",
+                healthcheck: "https://alexander.j.sealey-everest.nord/"
+              }
+            });
