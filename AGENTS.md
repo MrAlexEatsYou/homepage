@@ -19,3 +19,7 @@ See the **README** and **`.github/workflows/`** for this service’s scope (buil
 ## MCP
 
 Bridge/server source: [`MCP_GITOPS.md`](https://github.com/MrAlexEatsYou/homelab-ops/blob/main/docs/MCP_GITOPS.md). No MCP secrets belong in this repository.
+
+## Central logs (operators)
+
+Docker logs are aggregated in **Grafana/Loki** from **`homelab-ops`** only — you do not add logging code to this repo. See [`OBSERVABILITY_GITOPS.md`](https://github.com/MrAlexEatsYou/homelab-ops/blob/main/docs/OBSERVABILITY_GITOPS.md).
