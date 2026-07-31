@@ -1,5 +1,5 @@
 # Template: copied into each target repo by the Bootstrap Repos workflow.
-# Merges dependency PRs after Cursor approves them.
+# Merges dependency PRs after review via cursor-safe-to-merge label or Cursor GitHub App approval.
 name: Dependency Auto Merge
 
 on:
@@ -45,7 +45,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           PR="${{ steps.pr.outputs.number }}"
-          gh pr view "$PR" --json labels,mergeable,mergeStateStatus,headRefName,baseRefName \
+          gh pr view "$PR" --repo "${{ github.repository }}" \
+            --json labels,mergeable,mergeStateStatus,headRefName,baseRefName \
             > pr-meta.json
           cat pr-meta.json
 
@@ -87,5 +88,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh pr merge "${{ steps.pr.outputs.number }}" --squash --delete-branch
+          gh pr merge "${{ steps.pr.outputs.number }}" --repo "${{ github.repository }}" \
+            --squash --delete-branch
           echo "Merged dependency PR #${{ steps.pr.outputs.number }}"
